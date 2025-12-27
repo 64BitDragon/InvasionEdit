@@ -37,7 +37,7 @@ struct StrHeader {
 struct IndexInfo {
    u32 totalSizeOfLanguage;
    u32 indexCount;
-   u32 c;//language? unique for each language and would still fit with winstr (different order since english is first and only)and hetra 
+   u32 language;
    u32 d;
 };
 
