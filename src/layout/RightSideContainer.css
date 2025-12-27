@@ -8,8 +8,14 @@
     top: 0%;
 
     display: flex;
+    align-items: flex-start;
     margin-top: 64px;
     z-index: 200;
+    pointer-events: none;
+}
+
+.right-side-container * {
+    pointer-events: auto;
 }
 
 .right-side-container.vertical-center {
