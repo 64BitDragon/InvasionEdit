@@ -54,6 +54,12 @@
         "start": " Start Decoder",
         "title": "SAM Decoder"
     },
+    "str-extractor": {
+        "description-short": "Extracts strings from .str files.",
+        "select-file": "Select .str file",
+        "start-extractor": "Start Extractor",
+        "title": "STR Extractor"
+    },
     "common": {
         "cancel": "Cancel",
         "app_name": "Invasion Edit",

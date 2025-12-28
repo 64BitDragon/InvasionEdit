@@ -113,6 +113,12 @@
       "audio": "Anschließend können Video und Audio zusammengeführt werden, sofern die FLM Datei Audio enthält."
     }
   },
+  "str-extractor": {// TODO: Placeholder for de-DE translation vs code suggested texts please check
+    "description-short": "Extrahiert Textdateien aus STR-Dateien.",
+    "select-file": "Wählen Sie die .str-Datei aus",
+    "start-extractor": "Starten Sie den Extraktor",
+    "title": "STR-Extraktor"
+  },
   "lvl-editor": {
     "save-levels": "Level speichern",
     "select-file": "Level-Datei",
