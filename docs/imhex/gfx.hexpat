@@ -1,3 +1,4 @@
+#pragma pattern_limit 2000000
 struct Date1 {
   u8 ss;
   u8 mm;
@@ -31,21 +32,43 @@ struct Header {
   
   u32 unknown;
   u32 unknownOffset;
-  
+  padding[0x44];
+  char16 fileName[0x100 / 2];
   //you get to the thing at desired index by << 5 so 86 << 5 becomes 10c0 offset compared to start things
   //because each thing is 0x20 long
 
 }; 
 
 struct thing {
-  u32 a;
-  u32 b;
-  u32 unknown[6];
+  u32 width;
+  u32 height;
+  u32 pallete; //0xffffffff means no pallete, 0x00000000 seems to indicate palette at start of file (0x200 offset)
+  u32 textureOffset;
+  u32 unknown[2];//always 0? Maybe for inserting the pallete PTR at runtime?
+  u32 widthAgain;
+  u32 heightAgain;
 };
+
+struct pixelData{
+u8 b;
+u8 g;
+u8 r;
+u8 a;
+};
+
+struct Palette {
+    u8 unknown[parent.header.unknownOffset - 0x200];
+};
+
 
 struct gfx{
   Header header;
-  thing thingArray[header.numberOfThings] @header.unknownOffset;
+  Palette pal;
+  thing thingArray[header.numberOfThings];
+
+  //for(int i = 0; i < header.numberOfThings; i++)
+  pixelData data[thingArray[0].width * thingArray[0].height];
+  
 };
 
 gfx File@0x0;

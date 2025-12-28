@@ -23,11 +23,11 @@ struct CgnHeader {
   char16 pcname1[0x20];
   char16 pcname2[0x20];
   u32;
-  u32;
+  u32 startingLevel;
   u32 cgnCount;
-  u32;
-  u32;
-  u32;
+  u32 maxPlayerInt;
+  u32 minPlayerInt;
+  u32 runTimeOverwriteWith0xB4Val; // (current level index?)
   padding[0x38];
 
 };
@@ -44,15 +44,15 @@ struct CgnDatEntry {
 };
 
 struct CgnEntry {
-    u32;u32;u32;u32;
+    u32 currentLevelIndex;u32 nextLevel0;u32 nextLevel1;u32 nextLevel3;//level3 never used
     padding[0x30];
     u32;u32;u32;u32;
     u32;u32;u32;u32;
     padding[0xA0];
     u32 missionIndex;
-    u32;
+    padding[0x8];//Thandor points to 0x30c after finding mission index, these bytes are skipped
     char16 name[0x20];
-    padding[0x38];
+    padding[0x34];
 };
 
 struct Cgn {
