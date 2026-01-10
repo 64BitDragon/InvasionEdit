@@ -30,4 +30,7 @@ export interface LevFile {
     buildingFilter2: LevRGBA;
     environmentFilter1: LevRGBA;
     environmentFilter2: LevRGBA;
+    allyStates: number;
+    peaceStates: number;
+    ally0x318: number;
 }

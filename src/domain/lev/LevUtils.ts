@@ -165,6 +165,9 @@ async function parseLevFile(file: File): Promise<LevFile> {
         buildingFilter2: util.readRGBA(0x304),
         environmentFilter1: util.readRGBA(0x308),
         environmentFilter2: util.readRGBA(0x30c),
+        allyStates: util.getUint32(0x31c),
+        peaceStates: util.getUint32(0x320),
+        ally0x318: util.getUint32(0x318),// seems to be related to player relations for now copying it over just to be safe
     };
 }
 
@@ -259,6 +262,14 @@ export function buildLevPckFileEntry(levFile: LevFile): PckFileEntry {
     // player count
     utils.writeUint32(0x310, levFile.playerCount1);
     utils.writeUint32(0x314, levFile.playerCount2);
+
+    //Unknown, part of player relations?
+    utils.writeUint32(0x318, levFile.ally0x318);
+    // Player relations
+    utils.writeUint32(0x31c, levFile.allyStates);
+    utils.writeUint32(0x320, levFile.peaceStates);
+    
+
 
     utils.writeUint32(0x328, 3889176576);
     utils.writeUint32(0x32c, 3627032576);
