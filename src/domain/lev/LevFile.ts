@@ -3,6 +3,7 @@ import { MapSize } from "../constants/MapSize";
 import { PlanetName } from "../constants/PlanetName";
 import { LevPlayerMeta } from "./LevPlayerMeta";
 import { LevRGBA } from "./LevRGBA";
+import { LevFileArrayOffset } from "./LevFileArrayOffset";
 
 export type PlayerCount = 1 | 2 | 3 | 4 | 5 | 6;
 export const MIN_PLAYER_COUNT = 2;
@@ -20,7 +21,23 @@ export interface LevFile {
     mapTextIndex: number;
     planetName: PlanetName;
     mapSize: MapSize;
+    fldLinkOffset: number;
+    gfxSoilOffset: number;
+    gfxWaterOffset: number;
+    gfxSkyOffset: number;
+    mdlArmyOffset: number;
+    gfxShotOffset: number;
+    gfxEffectenOffset: number;
+    flmOffset: number;
+    soundOffset: number;
+    techOffset: number;
     entityCount: number;
+    entityOffset: number;
+    mldOffset: number;//for now we're just using a general mldOffset with size derived from entityOffset, this may need to be changed later
+    armFiles: LevFileArrayOffset;
+    mldFiles: LevFileArrayOffset;
+    effFiles: LevFileArrayOffset;
+    shtFiles: LevFileArrayOffset;
     mdls: string[];
     entities: LevEntity[];
     playerCount1: number;

@@ -1,3 +1,4 @@
+import { count } from "console";
 import { readFile } from "../../common/utils/readFile";
 import { HeaderUtils } from "../HeaderUtils";
 import { PckFileEntry } from "../pck/PckFileEntry";
@@ -11,6 +12,7 @@ import {
     ZOOM_LEVEL,
 } from "./LevPlayerMeta";
 import { LevRGBA } from "./LevRGBA";
+import { LevFileArrayOffset } from "./LevFileArrayOffset";
 
 const mdlLenght = 64;
 
@@ -53,9 +55,9 @@ export class LevUtils extends HeaderUtils {
         };
     }
 
-    writeEntities(entities: LevEntity[]) {
+    writeEntities(entities: LevEntity[], entityOffset: number) {
         for (let i = 0; i < entities.length; i++) {
-            const index = 0x1540 + i * 0x20;
+            const index = entityOffset + i * 0x20;
             this.writeEntity(index, entities[i]);
         }
     }
@@ -130,6 +132,16 @@ export class LevUtils extends HeaderUtils {
             a: this.writeUint8(index, rgba.a),
         };
     }
+    readFileArrayOffset(index: number): LevFileArrayOffset {
+        return {
+            count: this.getUint32(index),
+            offset: this.getUint32(index + 4),
+        };
+    }
+    writeFileArrayOffset(index: number, fileArrayOffset: LevFileArrayOffset) {
+        this.writeUint32(index, fileArrayOffset.count);
+        this.writeUint32(index + 4, fileArrayOffset.offset);
+    }
     static parseLevFile = async (file: File): Promise<LevFile> => parseLevFile(file);
 }
 
@@ -144,6 +156,7 @@ async function parseLevFile(file: File): Promise<LevFile> {
     const playerCount = Math.max(playerCount1, playerCount2);
     const entityOffset = util.getUint32(0xdc);
     const mdlOffset = util.getUint32(0xec);
+    
     return {
         name: file.name,
         fileSize: util.getUint32(0x04),
@@ -169,11 +182,28 @@ async function parseLevFile(file: File): Promise<LevFile> {
         allyStates: util.getUint32(0x31c),
         peaceStates: util.getUint32(0x320),
         ally0x318: util.getUint32(0x318),// seems to be related to player relations for now copying it over just to be safe
+        mldOffset: mdlOffset,
+        entityOffset: entityOffset,
+
+        fldLinkOffset: util.getUint32(0xb0),
+        gfxSoilOffset: util.getUint32(0xb4),
+        gfxWaterOffset: util.getUint32(0xb8),
+        gfxSkyOffset: util.getUint32(0xbc),
+        mdlArmyOffset: util.getUint32(0xc0),
+        gfxShotOffset: util.getUint32(0xc4),
+        gfxEffectenOffset: util.getUint32(0xc8),
+        flmOffset: util.getUint32(0xcc),
+        soundOffset: util.getUint32(0xd0),
+        techOffset: util.getUint32(0xd4),
+        armFiles: util.readFileArrayOffset(0xe0),
+        mldFiles: util.readFileArrayOffset(0xe8),
+        effFiles: util.readFileArrayOffset(0xf0),
+        shtFiles: util.readFileArrayOffset(0xf8),
     };
 }
 
 export function buildLevPckFileEntry(levFile: LevFile): PckFileEntry {
-    const fileSize = 0x800 + 0x40 * levFile.mdls.length + 0x20 * levFile.entities.length;
+    const fileSize = levFile.mldOffset + 0x40 * levFile.mdls.length + 0x20 * levFile.entities.length;
     const dest = new ArrayBuffer(fileSize);
     const destView = new DataView(dest);
     const utils = new LevUtils(destView);
@@ -185,8 +215,7 @@ export function buildLevPckFileEntry(levFile: LevFile): PckFileEntry {
 
     // write magic bytes
     utils.writeUint32(0x08, 1);
-    utils.writeUint32(0x0c, 1);
-    utils.writeUint32(0x0e, 7);
+    utils.writeUint32(0x0c, 0x70001);
 
     // write time stamps
     const now = new Date();
@@ -200,34 +229,29 @@ export function buildLevPckFileEntry(levFile: LevFile): PckFileEntry {
     utils.writeString(0x70, pcName);
 
     // unknown settings (probably offsets to fetch certain information)
-    utils.writeUint32(0x0b0, 4800);
-    utils.writeUint32(0x0b4, 4864);
-    utils.writeUint32(0x0b8, 4928);
-    utils.writeUint32(0x0bc, 4992);
+    utils.writeUint32(0xb0 ,levFile.fldLinkOffset);
+    utils.writeUint32(0xb4 ,levFile.gfxSoilOffset);
+    utils.writeUint32(0xb8 ,levFile.gfxWaterOffset);
+    utils.writeUint32(0xbc ,levFile.gfxSkyOffset);
+    utils.writeUint32(0xc0 ,levFile.mdlArmyOffset);
+    utils.writeUint32(0xc4 ,levFile.gfxShotOffset);
+    utils.writeUint32(0xc8 ,levFile.gfxEffectenOffset);
+    utils.writeUint32(0xcc ,levFile.flmOffset);
+    utils.writeUint32(0xd0 ,levFile.soundOffset);
+    utils.writeUint32(0xd4 ,levFile.techOffset);
 
-    utils.writeUint32(0x0c0, 5056);
-    utils.writeUint32(0x0c4, 5120);
-    utils.writeUint32(0x0c8, 5184);
-    utils.writeUint32(0x0cc, 5376);
-
-    utils.writeUint32(0x0d0, 5248);
-    utils.writeUint32(0x0d4, 5312);
 
     // write entity count
     utils.writeUint32(0xd8, levFile.entities.length);
 
     // unknown settings (probably offsets to fetch certain information)
-    utils.writeUint32(0x0dc, 5440);
+    utils.writeUint32(0x0dc, levFile.entityOffset);
 
-    utils.writeUint32(0x0e0, 11);
-    utils.writeUint32(0x0e4, 3200);
-    utils.writeUint32(0x0e8, 18);
-    utils.writeUint32(0x0ec, 2048);
 
-    utils.writeUint32(0x0f0, 10);
-    utils.writeUint32(0x0f4, 4160);
-    utils.writeUint32(0x0f8, 4);
-    utils.writeUint32(0x0fc, 3904);
+    utils.writeFileArrayOffset(0x0e0, levFile.armFiles);
+    utils.writeFileArrayOffset(0x0e8, levFile.mldFiles);
+    utils.writeFileArrayOffset(0xf0, levFile.effFiles);
+    utils.writeFileArrayOffset(0xf8, levFile.shtFiles);
 
     // write level file name
     utils.writeString(0x100, levFile.levelName);
@@ -371,7 +395,7 @@ export function buildLevPckFileEntry(levFile: LevFile): PckFileEntry {
     utils.writeMdls(levFile.mdls);
 
     // write entities (buildings/vehicles/decoration)
-    utils.writeEntities(levFile.entities);
+    utils.writeEntities(levFile.entities, levFile.entityOffset);
 
     return {
         name: levFile.name,
