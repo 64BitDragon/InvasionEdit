@@ -19,11 +19,10 @@ export class LevUtils extends HeaderUtils {
         super(dataView);
     }
 
-    readMdls(): string[] {
+    readMdls(mdlOffset: number, entityOffset: number): string[] {
         const result: string[] = [];
-        for (let i = 0; i < 53; i++) {
-            const fromIndex = 0x800 + i * mdlLenght;
-            result.push(this.readString(fromIndex, mdlLenght));
+        for (let index = mdlOffset; index < entityOffset; index += mdlLenght) {
+            result.push(this.readString(index, mdlLenght));
         }
         return result;
     }
@@ -35,10 +34,10 @@ export class LevUtils extends HeaderUtils {
         }
     }
 
-    readEntities(count: number): LevEntity[] {
+    readEntities(count: number, entityOffset: number): LevEntity[] {
         const result: LevEntity[] = [];
         for (let i = 0; i < count; i++) {
-            const fromIndex = 0x1540 + i * 32;
+            const fromIndex = entityOffset + i * 32;
             result.push(this.readEntity(fromIndex));
         }
         return result;
@@ -143,6 +142,8 @@ async function parseLevFile(file: File): Promise<LevFile> {
     const playerCount1 = util.getUint32(0x310);
     const playerCount2 = util.getUint32(0x314);
     const playerCount = Math.max(playerCount1, playerCount2);
+    const entityOffset = util.getUint32(0xdc);
+    const mdlOffset = util.getUint32(0xec);
     return {
         name: file.name,
         fileSize: util.getUint32(0x04),
@@ -156,8 +157,8 @@ async function parseLevFile(file: File): Promise<LevFile> {
         mapTextIndex: util.getUint32(0x170),
         mapSize: util.getUint32(0x180),
         entityCount: entityCount,
-        mdls: util.readMdls(),
-        entities: util.readEntities(entityCount),
+        mdls: util.readMdls(mdlOffset, entityOffset),
+        entities: util.readEntities(entityCount, entityOffset),
         playerCount1: playerCount,
         playerCount2: playerCount,
         playerMeta: util.readLevPlayerMetas(),
